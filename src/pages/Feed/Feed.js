@@ -44,6 +44,10 @@ class Feed extends Component {
       socket.on('posts',(data)=>{ // 백엔드랑 이름 같아야함
         if(data.action === 'create'){
           this.addPost(data.post);
+        }else if (data.action === 'update'){
+          this.updatePost(data.post);
+        }else if(data.action === 'delete'){
+          this.loadPosts();
         }
       }) 
   }
@@ -59,6 +63,19 @@ class Feed extends Component {
       return {
         posts: updatedPosts,
         totalPosts: prevState.totalPosts +1
+      }
+    })
+  }
+
+  updatePost = post =>{
+    this.setState(prevState =>{
+      const updatePosts = [...prevState.posts];
+      const updatePostIndex = updatePosts.findIndex(p=> p._id === post._id)
+      if( updatePostIndex > -1 ){
+        updatePosts[updatePostIndex] =post;
+      }
+      return{
+        posts:updatePosts
       }
     })
   }
@@ -184,12 +201,12 @@ class Feed extends Component {
         };
         this.setState((prevState) => {
           let updatedPosts = [...prevState.posts];
-          if (prevState.editPost) {
-            const postIndex = prevState.posts.findIndex(
-              (p) => p._id === prevState.editPost._id
-            );
-            updatedPosts[postIndex] = post;
-          }
+          // if (prevState.editPost) {
+          //   const postIndex = prevState.posts.findIndex(
+          //     (p) => p._id === prevState.editPost._id
+          //   );
+          //   updatedPosts[postIndex] = post;
+          // }
           //  else if (prevState.posts.length < 2) {
           //   updatedPosts = prevState.posts.concat(post);
           // }
@@ -232,10 +249,11 @@ class Feed extends Component {
       })
       .then((resData) => {
         console.log(resData);
-        this.setState((prevState) => {
-          const updatedPosts = prevState.posts.filter((p) => p._id !== postId);
-          return { posts: updatedPosts, postsLoading: false };
-        });
+        this.loadPosts(); //새로고침
+        // this.setState((prevState) => {
+        //   const updatedPosts = prevState.posts.filter((p) => p._id !== postId);
+        //   return { posts: updatedPosts, postsLoading: false };
+        // });
       })
       .catch((err) => {
         console.log(err);
